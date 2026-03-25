@@ -1,0 +1,46 @@
+name: Serverless
+category: deployment_architecture
+description: Event-driven architecture using managed services
+
+characteristics:
+  no_server_management: no infrastructure to manage
+  auto_scaling: automatic scaling based on demand
+  pay_per_use: billing based on actual usage
+  event_driven: functions triggered by events
+
+components:
+  functions:
+    description: Code that executes in response to events
+    examples:
+      - aws_lambda
+      - azure_functions
+      - cloud_functions
+
+  event_sources:
+    description: Services that trigger functions
+    examples:
+      - http_triggers
+      - message_queues
+      - databases
+      - storage
+      - schedules
+
+  managed_services:
+    description: Backend services consumed by functions
+    examples:
+      - databases
+      - storage
+      - message_queues
+      - authentication
+
+advantages:
+  - reduced operational overhead
+  - cost efficiency for variable workloads
+  - automatic scaling
+  - faster deployment
+
+considerations:
+  - cold start latency
+  - execution time limits
+  - stateless design required
+  - vendor lock-in

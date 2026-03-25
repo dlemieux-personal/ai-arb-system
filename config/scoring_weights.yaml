@@ -1,0 +1,32 @@
+# Scoring Weights Configuration
+# These weights determine the relative importance of each review dimension
+
+review_dimensions:
+  security:
+    weight: 0.25
+    description: "Assessment of security architecture, authentication, and data protection"
+  
+  scalability:
+    weight: 0.20
+    description: "Evaluation of system scalability and performance characteristics"
+  
+  reliability:
+    weight: 0.20
+    description: "Assessment of reliability, fault tolerance, and disaster recovery"
+  
+  data_architecture:
+    weight: 0.15
+    description: "Evaluation of data modeling, storage, and consistency strategies"
+  
+  cost_optimization:
+    weight: 0.10
+    description: "Assessment of cost efficiency and resource optimization"
+  
+  compliance:
+    weight: 0.10
+    description: "Evaluation of compliance with regulatory and organizational requirements"
+
+# Overall score calculation
+overall_score:
+  calculation: "weighted_average"
+  round_to_decimals: 2

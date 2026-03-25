@@ -1,0 +1,41 @@
+name: Data Mesh
+category: data_architecture
+description: Decentralized data architecture pattern
+
+principles:
+  domain_oriented_ownership: domains own their data as products
+  data_as_product: treat data as first-class product
+  self_serve_infra: platforms provide self-service capabilities
+  federated_governance: central principles with local execution
+
+components:
+  data_products:
+    description: Domain-owned data assets
+    characteristics:
+      - discoverable
+      - addressable
+      - self-describing
+      - interoperable
+
+  data_platform:
+    description: Self-serve infrastructure
+    capabilities:
+      - data_storage
+      - transformation
+      - cataloging
+      - access_management
+      - monitoring
+
+  data_governance:
+    description: Federated governance rules
+    aspects:
+      - data_quality
+      - security
+      - compliance
+      - interoperability
+
+benefits:
+  - scalability through decentralization
+  - faster time to value
+  - improved data quality
+  - better data governance

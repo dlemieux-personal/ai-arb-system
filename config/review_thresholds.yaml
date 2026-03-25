@@ -1,0 +1,52 @@
+# Review Approval Thresholds Configuration
+
+thresholds:
+  overall_score:
+    approved:
+      minimum: 0.80
+      description: "Architecture passes review and is approved"
+    
+    conditional_approval:
+      minimum: 0.65
+      maximum: 0.79
+      description: "Architecture approved with recommended remediation items"
+    
+    rejected:
+      maximum: 0.64
+      description: "Architecture rejected and requires significant revision"
+
+  dimension_scores:
+    # Minimum acceptable scores for each dimension
+    security:
+      minimum: 0.70
+      critical: false
+    
+    scalability:
+      minimum: 0.65
+      critical: false
+    
+    reliability:
+      minimum: 0.70
+      critical: false
+    
+    data_architecture:
+      minimum: 0.60
+      critical: false
+    
+    cost_optimization:
+      minimum: 0.50
+      critical: false
+    
+    compliance:
+      minimum: 0.75
+      critical: true  # Failing this dimension causes automatic rejection
+
+# Escalation Configuration
+escalation:
+  security_issues:
+    - high_severity_findings
+    - critical_vulnerabilities
+  
+  architectural_concerns:
+    - scalability_risks
+    - reliability_concerns

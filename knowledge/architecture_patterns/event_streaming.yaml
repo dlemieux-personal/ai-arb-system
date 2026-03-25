@@ -1,0 +1,43 @@
+name: Event Streaming
+category: messaging
+description: Patterns for building event streaming architectures
+
+components:
+  event_source:
+    description: Systems that produce events
+    examples:
+      - user_actions
+      - system_events
+      - sensor_data
+
+  event_broker:
+    description: Platform for distributing events
+    examples:
+      - kafka
+      - kinesis
+      - event_hub
+
+  event_processor:
+    description: Systems that consume and process events
+    examples:
+      - stream_processors
+      - microservices
+      - analytics_engines
+
+  event_sink:
+    description: Destination for processed events
+    examples:
+      - databases
+      - data_lakes
+      - caches
+
+scaling:
+  Producer scaling: partition topics, load balance connections
+  Consumer scaling: consumer groups, parallel consumers
+  Broker scaling: cluster expansion, replication
+
+reliability:
+  Message persistence: multiple replicas
+  Acknowledgments: at-least-once delivery guarantees
+  Idempotency: ensure safe retries
+  Monitoring: lag tracking, latency monitoring

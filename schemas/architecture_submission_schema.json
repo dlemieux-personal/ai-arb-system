@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Architecture Submission Schema",
+  "type": "object",
+  "required": [
+    "submission_id",
+    "team_name",
+    "submission_date",
+    "system_overview",
+    "sections"
+  ],
+  "properties": {
+    "submission_id": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}-[0-9]{4}-[A-Z0-9]{6}$",
+      "description": "Unique submission identifier"
+    },
+    "team_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Name of the team submitting the architecture"
+    },
+    "submission_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 submission timestamp"
+    },
+    "system_overview": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 5000
+        },
+        "business_objectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "properties": {
+        "security": {
+          "type": "object",
+          "properties": {
+            "authentication_method": {"type": "string"},
+            "authorization_strategy": {"type": "string"},
+            "encryption_in_transit": {"type": "boolean"},
+            "encryption_at_rest": {"type": "boolean"},
+            "compliance_frameworks": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "scalability": {
+          "type": "object",
+          "properties": {
+            "expected_peak_load": {"type": "number"},
+            "load_unit": {"type": "string", "enum": ["requests/sec", "transactions/sec", "users"]},
+            "scaling_strategy": {"type": "string"},
+            "performance_targets": {
+              "type": "object",
+              "properties": {
+                "p50_latency_ms": {"type": "number"},
+                "p99_latency_ms": {"type": "number"},
+                "throughput_per_second": {"type": "number"}
+              }
+            }
+          }
+        },
+        "reliability": {
+          "type": "object",
+          "properties": {
+            "target_availability": {"type": "string"},
+            "rto_minutes": {"type": "number"},
+            "rpo_minutes": {"type": "number"},
+            "redundancy_level": {"type": "string", "enum": ["none", "single", "multi_region"]}
+          }
+        },
+        "data_architecture": {
+          "type": "object",
+          "properties": {
+            "primary_datastore": {"type": "string"},
+            "consistency_model": {"type": "string", "enum": ["strong", "eventual", "causal"]},
+            "backup_strategy": {"type": "string"}
+          }
+        },
+        "cost": {
+          "type": "object",
+          "properties": {
+            "estimated_monthly_cost": {"type": "number"},
+            "cost_currency": {"type": "string", "default": "USD"},
+            "cost_optimization_measures": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "regulatory_requirements": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "data_residency_required": {"type": "boolean"},
+            "audit_requirements": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {"type": "string"},
+          "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+          "mitigation": {"type": "string"}
+        }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string"},
+          "url": {"type": "string"}
+        }
+      }
+    }
+  }
+}

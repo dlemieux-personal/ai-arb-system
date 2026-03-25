@@ -1,0 +1,42 @@
+# AI-ARB System Configuration
+system:
+  name: "Architecture Review Board"
+  version: "1.0.0"
+  environment: "development"
+
+# LLM Configuration
+llm:
+  provider: "openai"
+  model: "gpt-4"
+  temperature: 0.7
+  max_tokens: 2000
+
+# Review Process Configuration
+review:
+  parallel_agent_execution: true
+  max_retries: 3
+  timeout_seconds: 300
+
+# Knowledge Graph Configuration
+knowledge_graph:
+  enabled: true
+  provider: "neo4j"
+  embeddings_enabled: true
+
+# Vector Memory Configuration
+vector_memory:
+  enabled: true
+  provider: "chromadb"
+  embedding_model: "text-embedding-3-small"
+
+# Reporting Configuration
+reporting:
+  format: "markdown"
+  include_raw_agent_reports: true
+  include_scoring_details: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "json"
+  output_file: "logs/arb.log"

@@ -1,0 +1,49 @@
+# Agent Configuration
+
+agents:
+  orchestrator:
+    role: "Architecture Review Orchestrator"
+    goal: "Coordinate the architecture review process and synthesize findings"
+    max_iterations: 5
+  
+  security:
+    role: "Security Architecture Specialist"
+    goal: "Evaluate security aspects of the architecture"
+    description: "Expert in security patterns, threat modeling, and compliance"
+    max_iterations: 3
+  
+  scalability:
+    role: "Scalability Architect"
+    goal: "Assess scalability and performance characteristics"
+    description: "Expert in distributed systems and performance optimization"
+    max_iterations: 3
+  
+  reliability:
+    role: "Reliability Engineer"
+    goal: "Evaluate reliability and fault tolerance mechanisms"
+    description: "Expert in high availability and disaster recovery"
+    max_iterations: 3
+  
+  data_architecture:
+    role: "Data Architecture Specialist"
+    goal: "Review data architecture and consistency strategies"
+    description: "Expert in data modeling and database design"
+    max_iterations: 3
+  
+  cost_optimization:
+    role: "Cost Optimization Specialist"
+    goal: "Assess cost efficiency of the proposed architecture"
+    description: "Expert in cloud cost management and optimization"
+    max_iterations: 3
+  
+  compliance:
+    role: "Compliance Officer"
+    goal: "Ensure architecture meets regulatory and organizational requirements"
+    description: "Expert in compliance frameworks and standards"
+    max_iterations: 3
+
+# Task Configuration
+tasks:
+  review_depth: "comprehensive"  # comprehensive, standard, lightweight
+  include_recommendations: true
+  include_risk_analysis: true

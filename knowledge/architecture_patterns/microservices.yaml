@@ -1,0 +1,41 @@
+name: Microservices
+category: service_architecture
+description: Architectural pattern for building distributed systems
+
+components:
+  api_gateway:
+    description: Entry point for clients
+    responsibilities:
+      - request routing
+      - authentication
+      - rate limiting
+      - response aggregation
+
+  services:
+    description: Independent business capability services
+    characteristics:
+      - single responsibility
+      - autonomous deployment
+      - explicit contracts
+      - decentralized data
+
+  service_discovery:
+    description: Service registry and discovery
+    examples:
+      - consul
+      - eureka
+      - kubernetes
+
+  communication:
+    description: Inter-service communication
+    patterns:
+      - rest_api
+      - grpc
+      - message_queue
+      - event_stream
+
+resilience:
+  circuit_breaker: fail fast on dependent service failures
+  retry_logic: exponential backoff with jitter
+  timeout: prevent indefinite waiting
+  bulkhead: isolate resources per service
