@@ -13,8 +13,18 @@ class TestSecurityAgent:
     """Tests for security review agent"""
     
     @pytest.fixture
-    def security_agent(self):
-        """Fixture for initializing security agent"""
+    @patch('src.agents.definitions.security_agent.Agent')
+    @patch('src.agents.definitions.security_agent.vector_search_tool')
+    @patch('src.agents.definitions.security_agent.graph_query_tool')
+    def security_agent(self, mock_graph_tool, mock_vector_tool, mock_agent_class):
+        """Fixture for initializing security agent with mocked dependencies"""
+        # Configure the mock agent
+        mock_agent = Mock()
+        mock_agent.role = "Senior Cloud Security Architect"
+        mock_agent.goal = "Evaluate the architecture for security risks, vulnerabilities, and compliance with modern security practices"
+        mock_agent.tools = [mock_vector_tool, mock_graph_tool]
+        mock_agent_class.return_value = mock_agent
+        
         return build_security_agent()
     
     def test_agent_initialization(self, security_agent):
@@ -32,8 +42,18 @@ class TestScalabilityAgent:
     """Tests for scalability review agent"""
     
     @pytest.fixture
-    def scalability_agent(self):
-        """Fixture for initializing scalability agent"""
+    @patch('src.agents.definitions.scalability_agent.Agent')
+    @patch('src.agents.definitions.scalability_agent.vector_search_tool')
+    @patch('src.agents.definitions.scalability_agent.graph_query_tool')
+    def scalability_agent(self, mock_graph_tool, mock_vector_tool, mock_agent_class):
+        """Fixture for initializing scalability agent with mocked dependencies"""
+        # Configure the mock agent
+        mock_agent = Mock()
+        mock_agent.role = "Distributed Systems Architect"
+        mock_agent.goal = "Determine whether the system can scale to expected load and perform acceptably under stress"
+        mock_agent.tools = [mock_vector_tool, mock_graph_tool]
+        mock_agent_class.return_value = mock_agent
+        
         return build_scalability_agent()
     
     def test_agent_initialization(self, scalability_agent):
