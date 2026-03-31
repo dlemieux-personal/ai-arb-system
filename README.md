@@ -4,7 +4,7 @@ An intelligent, agent-based architecture review board system powered by Crew AI 
 
 ## A Brief Note
 
-This project is an attempt to utilize Agentic AI to resolve a common bottleneck within many organizations, which is the meeting-based Architecture Review Board (ARB). In many cases, ARBs only meet bi-weekly, and it cans sometimes take over a month for an architect to get on the ARB agenda, present their solution, hear feedback, apply it, and get approval to build. 
+This project is an attempt to utilize Agentic AI to resolve a common bottleneck within many organizations, which is the meeting-based Architecture Review Board (ARB). In many cases, ARBs only meet bi-weekly, and it can sometimes take over a month for an architect to get on the ARB agenda, present their solution, hear feedback, apply it, and get approval to build. 
 
 This solution allows architects to submit template-based submissions as PRs, which kick off the agentic process to give the submissions a standard first-pass review and scoring based on organizational best practices and requirements (see notes on the RAG process below), and then tag the ARB team in the PR to review the results. If there are questions, the ARB team can then reach out to the architect for confirmation, and any recommendations can be made in PR comments. Once the ARB team is satisfied, they can approve the PR, and the submission moves into the "Approved" section of the architecture source control.
 
