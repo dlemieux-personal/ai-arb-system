@@ -2,6 +2,14 @@
 
 An intelligent, agent-based architecture review board system powered by Crew AI and LLMs. This system automates the review of architecture submissions across multiple dimensions including security, scalability, reliability, data architecture, cost optimization, and compliance.
 
+## A Brief Note
+
+This project is an attempt to utilize Agentic AI to resolve a common bottleneck within many organizations, which is the meeting-based Architecture Review Board (ARB). In many cases, ARBs only meet bi-weekly, and it cans sometimes take over a month for an architect to get on the ARB agenda, present their solution, hear feedback, apply it, and get approval to build. This solution allows architects to submit template-based submissions as PRs, which kick off the agentic process to give the submissions a standard first-pass review and scoring based on organizational best practices and requirements (see notes on the RAG process below), and then tag the ARB team in the PR to review the results. If there are questions, the ARB team can then reach out to the architect for confirmation, and any recommendations can be made in PR comments. Once the ARB team is satisfied, they can approve the PR, and the submission moves into the "Approved" section of the architecture source control.
+
+When using this tool within an organization, some preparation work will be required to fit your organization's needs. The Neo4J and ChromaDB instances will need to be setup to establish baseline architecture patterns, established system architecture decisions, best practices, outcomes, and any other constraints or guardrails required to ensure the AI-ARB has the proper knowledge base to work from. In addition, prompts and settings will need to be customized within the src/agents/definitions and /src/agents/system_prompts folders to ensure the agent prompts match the requirements of your organization's architectural needs.
+
+Data and Agent Definition guides are in progress, and will be added to this repo once complete.
+
 ## 🎯 Overview
 
 AI-ARB processes architecture submissions through a multi-agent team that collaboratively reviews different aspects of proposed systems. Each agent is specialized in a specific domain and produces detailed findings that feed into a comprehensive scoring and recommendation system. The system then generates actionable improvement roadmaps with phased implementations, specific action items, and effort estimates.
