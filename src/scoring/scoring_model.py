@@ -4,7 +4,7 @@ Core scoring logic for evaluating architectures.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, cast
 import yaml
 from pathlib import Path
 
@@ -57,7 +57,7 @@ class ScoringModel:
     def _load_thresholds(self) -> Dict[str, Any]:
         """Load thresholds from YAML"""
         with open(self.thresholds_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+            return cast(Dict[str, Any], yaml.safe_load(f))
     
     def calculate_overall_score(self, dimension_scores: Dict[str, float]) -> float:
         """

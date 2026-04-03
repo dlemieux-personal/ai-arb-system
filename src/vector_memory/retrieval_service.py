@@ -3,7 +3,7 @@ Retrieval Service Module
 Retrieves relevant architecture patterns and past reviews using hybrid search.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, cast
 import json
 
 from src.knowledge_graph.graph_schema import GraphSchema
@@ -24,7 +24,7 @@ class RetrievalService:
         self.neo4j_client = neo4j_client
         self.schema = GraphSchema()
     
-    def retrieve_similar_reviews(self, submission: str, k: int = 5) -> List[Dict]:
+    def retrieve_similar_reviews(self, submission: str, k: int = 5) -> List[Dict[Any, Any]]:
         """
         Retrieve similar past reviews using vector similarity and graph context
         
@@ -39,7 +39,7 @@ class RetrievalService:
             return []
         
         # First, get all reviews from the graph
-        all_reviews = self.neo4j_client.find_nodes(GraphSchema.REVIEW)
+        all_reviews = cast(List[Dict[Any, Any]], self.neo4j_client.find_nodes(GraphSchema.REVIEW))
         
         if not all_reviews:
             return []
@@ -58,10 +58,10 @@ class RetrievalService:
             ]
             
             # Search for similar reviews
-            similar = self.vector_store.search(submission, k=k)
+            similar = cast(List[Dict[Any, Any]], self.vector_store.search(submission, k=k))
             
             # Enrich with graph data
-            results = []
+            results: List[Dict[Any, Any]] = []
             for item in similar:
                 # Try to find matching review
                 review_id = item.get('metadata', {}).get('review_id')

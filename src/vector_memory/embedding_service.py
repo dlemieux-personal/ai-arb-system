@@ -3,9 +3,14 @@ Embedding Service Module
 Handles embeddings for vector-based retrieval using OpenAI's embedding API.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 import os
 from pathlib import Path
+
+if TYPE_CHECKING:
+    from openai import OpenAI as OpenAIType
+else:
+    OpenAIType = None
 
 try:
     from dotenv import load_dotenv
@@ -16,7 +21,7 @@ except ImportError:
 try:
     from openai import OpenAI
 except ImportError:
-    OpenAI = None
+    OpenAI = None  # type: ignore
 
 
 class EmbeddingService:

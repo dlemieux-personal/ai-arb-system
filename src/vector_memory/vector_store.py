@@ -4,16 +4,23 @@ Manages vector storage and similarity search using ChromaDB.
 """
 
 import uuid
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from pathlib import Path
 import os
+
+if TYPE_CHECKING:
+    import chromadb
+    from chromadb.config import Settings
+else:
+    chromadb = None  # type: ignore
+    Settings = None  # type: ignore
 
 try:
     import chromadb
     from chromadb.config import Settings
 except ImportError:
-    chromadb = None
-    Settings = None
+    chromadb = None  # type: ignore
+    Settings = None  # type: ignore
 
 from src.vector_memory.embedding_service import EmbeddingService
 

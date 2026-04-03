@@ -26,7 +26,7 @@ class BestPracticeLoader:
         Returns:
             List of best practice documents
         """
-        best_practices = []
+        best_practices: List[Dict[str, Any]] = []
         
         # TODO: Load best practices from YAML/Markdown files
         # and parse them into structured format

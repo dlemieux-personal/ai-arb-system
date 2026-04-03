@@ -3,7 +3,7 @@ Config Loader Module
 Loads and manages configuration.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, cast
 from pathlib import Path
 import yaml
 
@@ -19,7 +19,7 @@ class ConfigLoader:
             config_dir: Directory containing configuration files
         """
         self.config_dir = Path(config_dir)
-        self.cache = {}
+        self.cache: Dict[str, Any] = {}
     
     def load_config(self, filename: str) -> Dict[str, Any]:
         """
@@ -33,7 +33,7 @@ class ConfigLoader:
         """
         # Check cache
         if filename in self.cache:
-            return self.cache[filename]
+            return cast(Dict[str, Any], self.cache[filename])
         
         # Add .yaml extension if not present
         if not filename.endswith(('.yaml', '.yml')):
@@ -45,7 +45,7 @@ class ConfigLoader:
             raise FileNotFoundError(f"Config file not found: {config_path}")
         
         with open(config_path, 'r', encoding='utf-8') as f:
-            config = yaml.safe_load(f)
+            config = cast(Dict[str, Any], yaml.safe_load(f))
         
         self.cache[filename] = config
         return config
@@ -67,7 +67,7 @@ class ConfigLoader:
             return config
         
         # Navigate nested keys
-        value = config
+        value: Any = config
         for part in key.split('.'):
             if isinstance(value, dict):
                 value = value.get(part)

@@ -3,7 +3,7 @@ Architecture Pattern Loader Module
 Loads architecture patterns into the knowledge graph.
 """
 
-from typing import List, Dict, Any
+from typing import Dict, Any, List, cast
 from pathlib import Path
 import yaml
 
@@ -52,4 +52,4 @@ class ArchitecturePatternLoader:
             raise FileNotFoundError(f"Pattern not found: {pattern_name}")
         
         with open(pattern_file, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+            return cast(Dict[str, Any], yaml.safe_load(f))

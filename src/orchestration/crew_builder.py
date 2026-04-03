@@ -21,8 +21,8 @@ class CrewBuilder:
             factory: Optional AgentFactory instance. If not provided, creates a new one.
         """
         self.factory = factory or AgentFactory()
-        self.agents = {}
-        self.tasks = {}
+        self.agents: Dict[str, Agent] = {}
+        self.tasks: Dict[str, Task] = {}
     
     def build_agents(self) -> Dict[str, Agent]:
         """

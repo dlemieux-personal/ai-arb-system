@@ -4,7 +4,7 @@ Provides a tool for executing Cypher queries against a Neo4j knowledge graph.
 """
 
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TYPE_CHECKING
 
 from crewai.tools import tool
 
@@ -15,11 +15,18 @@ try:
 except ImportError:
     pass
 
+if TYPE_CHECKING:
+    from neo4j import GraphDatabase as GraphDatabaseType
+    from neo4j import exceptions as exceptionsType
+else:
+    GraphDatabaseType = None
+    exceptionsType = None
+
 try:
     from neo4j import GraphDatabase, exceptions
 except ImportError:
-    GraphDatabase = None
-    exceptions = None
+    GraphDatabase = None  # type: ignore
+    exceptions = None  # type: ignore
 
 
 def _get_driver():

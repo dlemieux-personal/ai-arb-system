@@ -3,7 +3,7 @@ Review Workflow Module
 Defines the workflow steps for architecture review.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from enum import Enum
 
 
@@ -37,7 +37,7 @@ class ReviewWorkflow:
         ]
         self.current_step_index = 0
     
-    def get_next_step(self) -> ReviewStep:
+    def get_next_step(self) -> Optional[ReviewStep]:
         """Get the next workflow step"""
         if self.current_step_index < len(self.steps):
             step = self.steps[self.current_step_index]

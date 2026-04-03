@@ -13,7 +13,7 @@ from src.agents.definitions.recommendation_agents import (
     build_recommendation_compliance_agent,
 )
 from src.agents.definitions.recommendation_orchestrator_agent import build_recommendation_orchestrator
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, cast
 from pathlib import Path
 
 
@@ -41,7 +41,7 @@ class RecommendationCrewBuilder:
             'compliance': build_recommendation_compliance_agent(),
             'orchestrator': build_recommendation_orchestrator(),
         }
-        return self.agents
+        return cast(Dict[str, Agent], self.agents)
     
     def build_recommendation_crew(self, review_results: str) -> Crew:
         """

@@ -3,7 +3,7 @@ Rubric Engine Module
 Manages scoring rubrics and evaluation criteria.
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, cast
 from dataclasses import dataclass
 
 
@@ -72,4 +72,4 @@ class RubricEngine:
     
     def get_rubric(self, dimension: str) -> List[RubricCriterion]:
         """Get rubric for a specific dimension"""
-        return self.rubrics.get(dimension, [])
+        return cast(List[RubricCriterion], self.rubrics.get(dimension, []))

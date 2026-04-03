@@ -4,7 +4,7 @@ Factory for creating and managing VectorStore instances.
 """
 
 import os
-from typing import Optional
+from typing import Optional, cast
 from src.vector_memory.vector_store import VectorStore
 from src.vector_memory.embedding_service import EmbeddingService
 
@@ -32,7 +32,7 @@ def create_vector_store(collection_name: Optional[str] = None,
     
     embedding_service = EmbeddingService(model=embedding_model)
     vector_store = VectorStore(
-        collection_name=collection_name,
+        collection_name=cast(str, collection_name),
         persist_dir=persist_dir,
         embedding_service=embedding_service
     )

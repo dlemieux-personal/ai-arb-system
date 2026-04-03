@@ -25,7 +25,7 @@ class MarkdownExtractor:
         Returns:
             Dictionary mapping section names to their content
         """
-        sections = {}
+        sections: Dict[str, str] = {}
         
         # TODO: Implement section extraction
         
@@ -41,7 +41,7 @@ class MarkdownExtractor:
         Returns:
             List of code blocks with language and content
         """
-        code_blocks = []
+        code_blocks: List[Dict[str, str]] = []
         
         # TODO: Implement code block extraction
         
@@ -57,7 +57,7 @@ class MarkdownExtractor:
         Returns:
             Dictionary of extracted metadata
         """
-        metadata = {}
+        metadata: Dict[str, Any] = {}
         
         # TODO: Implement metadata extraction
         

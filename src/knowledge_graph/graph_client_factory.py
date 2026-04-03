@@ -35,7 +35,7 @@ def create_neo4j_client() -> Optional[Neo4jClient]:
         return None
     
     try:
-        return Neo4jClient(uri, user, password)
+        return Neo4jClient(uri or '', user or '', password or '')
     except Exception:
         return None
 

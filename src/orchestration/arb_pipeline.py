@@ -3,7 +3,7 @@ ARB Pipeline Module
 Main orchestration pipeline for the architecture review process.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 from dataclasses import dataclass
 from src.orchestration.recommendation_crew_builder import RecommendationCrewBuilder
@@ -89,19 +89,22 @@ class ARBPipeline:
         Returns:
             Executive summary string
         """
+        # Convert to string if needed (CrewOutput object)
+        output_str = str(recommendations_output) if recommendations_output else ""
+        
         # Look for executive summary section in the output
-        if "EXECUTIVE SUMMARY" in recommendations_output:
+        if "EXECUTIVE SUMMARY" in output_str:
             try:
-                start = recommendations_output.find("EXECUTIVE SUMMARY")
-                end = recommendations_output.find("\n\n", start)
+                start = output_str.find("EXECUTIVE SUMMARY")
+                end = output_str.find("\n\n", start)
                 if end == -1:
-                    end = len(recommendations_output)
-                return recommendations_output[start:end]
+                    end = len(output_str)
+                return output_str[start:end]
             except Exception:
-                return recommendations_output[:500]
+                return output_str[:500]
         
         # Fallback: return first 500 characters
-        return recommendations_output[:500] if recommendations_output else ""
+        return output_str[:500] if output_str else ""
     
     def process_submission(self, submission_path: Path) -> PipelineResult:
         """
@@ -194,7 +197,7 @@ class ARBPipeline:
             context['recommendation'] = recommendation
             
             # --- 5. Approval Decision ------------------------------------------------
-            critical_findings = {}  # placeholder for parsing critical issues
+            critical_findings: Dict[str, List[str]] = {}  # placeholder for parsing critical issues
             approval = self.approval_engine.make_decision(
                 overall_score=overall,
                 dimension_scores=dimension_scores,
@@ -219,8 +222,9 @@ class ARBPipeline:
                 
                 # Build and execute recommendation crew
                 rec_crew = recommendation_builder.build_recommendation_crew(review_summary)
-                recommendations_output = rec_crew.kickoff()
-                recommendation_summary = self._extract_executive_summary(recommendations_output)
+                crew_output = rec_crew.kickoff()
+                recommendations_output = str(crew_output) if crew_output else None
+                recommendation_summary = self._extract_executive_summary(recommendations_output) if recommendations_output else None
                 
                 context['recommendations'] = recommendations_output
                 context['recommendation_summary'] = recommendation_summary

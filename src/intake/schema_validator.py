@@ -3,7 +3,7 @@ Schema Validator Module
 Validates submissions against JSON schema.
 """
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, cast
 import json
 from pathlib import Path
 import jsonschema
@@ -27,7 +27,7 @@ class SchemaValidator:
     def _load_schema(self) -> Dict[str, Any]:
         """Load and return the JSON schema"""
         with open(self.schema_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            return cast(Dict[str, Any], json.load(f))
     
     def validate(self, submission_data: Dict[str, Any]) -> Tuple[bool, List[str]]:
         """

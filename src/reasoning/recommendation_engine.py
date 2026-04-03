@@ -3,7 +3,7 @@ Recommendation Engine Module
 Generates recommendations based on review findings.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 
 
@@ -18,7 +18,7 @@ class Recommendation:
     rationale: str
     implementation_effort: str  # high, medium, low
     expected_impact: str
-    implementation_guidance: str = None
+    implementation_guidance: Optional[str] = None
 
 
 class RecommendationEngine:

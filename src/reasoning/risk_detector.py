@@ -3,7 +3,7 @@ Risk Detector Module
 Identifies architectural risks in submissions.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 
 
@@ -17,7 +17,7 @@ class RiskAssessment:
     probability: float  # 0.0 to 1.0
     impact: float  # 0.0 to 1.0
     mitigation_available: bool
-    mitigation_strategy: str = None
+    mitigation_strategy: Optional[str] = None
 
 
 class RiskDetector:

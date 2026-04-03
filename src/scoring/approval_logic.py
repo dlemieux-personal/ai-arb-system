@@ -3,7 +3,7 @@ Approval Logic Module
 Implements decision logic for architecture approval.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 
@@ -15,7 +15,7 @@ class ApprovalDecision:
     overall_score: float
     rationale: str
     escalation_required: bool
-    escalation_reason: str = None
+    escalation_reason: Optional[str] = None
 
 
 class ApprovalEngine:

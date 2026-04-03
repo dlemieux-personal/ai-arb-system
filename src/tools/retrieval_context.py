@@ -4,7 +4,7 @@ Provides agent context from retrieved knowledge before task execution.
 """
 
 from crewai.tools import tool
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, cast
 import json
 
 try:
@@ -28,7 +28,7 @@ class RetrievalContextManager:
         """
         self.submission_text = submission_text
         self.retrieval_service = None
-        self.cached_context = {}
+        self.cached_context: Dict[str, Any] = {}
         
         if CONTEXT_AVAILABLE:
             try:
@@ -59,9 +59,9 @@ class RetrievalContextManager:
         
         cache_key = f"{domain}_{context_type}"
         if cache_key in self.cached_context:
-            return self.cached_context[cache_key]
+            return cast(str, self.cached_context[cache_key])
         
-        context_parts = []
+        context_parts: List[str] = []
         
         # Get best practices for the domain (fallback to semantic search if Neo4j unavailable)
         try:
