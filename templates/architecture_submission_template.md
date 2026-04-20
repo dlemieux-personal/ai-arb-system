@@ -1,8 +1,11 @@
-# Architecture Submission Template
+---
+submission_id: ACME-0001-ABC123
+team_name: "AcmeTech Engineering"
+submission_date: 2024-02-28
+system_title: "AI-Powered Supply Chain Architecture"
+---
 
-**Submission ID:** {submission_id}
-**Date:** {submission_date}
-**Submitted By:** {team_name}
+# Architecture Submission
 
 ## Executive Summary
 
@@ -30,7 +33,8 @@ List the primary technologies, frameworks, and services proposed.
 - Outline authorization strategy and access control
 
 ### 2.2 Data Protection
-- Data encryption (in-transit and at-rest)
+- **Encryption in Transit:** - [x] Enabled (use `- [x]` for true, `- [ ]` for false)
+- **Encryption at Rest:** - [x] Enabled
 - Data classification and handling requirements
 - PII protection measures
 
