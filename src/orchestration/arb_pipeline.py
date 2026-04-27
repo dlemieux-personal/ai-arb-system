@@ -7,6 +7,8 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 from dataclasses import dataclass
 from src.orchestration.recommendation_crew_builder import RecommendationCrewBuilder
+from src.orchestration.security_orchestrator import create_security_orchestrator
+from src.tools.retrieval_context import get_retrieval_context
 
 
 @dataclass
@@ -155,49 +157,110 @@ class ARBPipeline:
                 context['schema_valid'] = True
             
             # --- 3. Agent Review -----------------------------------------------------
-            # Build and run the review crew
-            crew = self.crew_builder.build_review_crew(submission_text)
-
-            # Attempt to execute crew; the real Crew API may differ.
-            review_outputs: Dict[str, str] = {}
-            if hasattr(crew, 'run'):
+            # Build and run the review crew using structured orchestration
+            review_outputs: Dict[str, Any] = {}
+            
+            # Run security agent using orchestrator for structured output
+            try:
+                security_orchestrator = create_security_orchestrator()
+                retrieval_context = None
                 try:
-                    review_outputs = crew.run(submission_text)
+                    ctx_manager = get_retrieval_context(submission_text)
+                    retrieval_context = ctx_manager.get_context_for_domain('security')
                 except Exception:
-                    review_outputs = {}
-            # fallback to placeholder outputs if crew invocation failed or is not available
-            if not review_outputs:
-                # fallback placeholders; use fixed dimension keys to align with scoring
-                for dim in ['security', 'scalability', 'reliability',
-                            'data_architecture', 'cost_optimization', 'compliance']:
-                    score_key = f"{dim.upper()}_SCORE"
-                    review_outputs[dim] = f"{score_key}: 0.50"
+                    # Retrieval context is optional
+                    retrieval_context = None
+                
+                security_output = security_orchestrator.run_crew(
+                    architecture_description=submission_text,
+                    submission_id=submission_id,
+                    retrieval_context=retrieval_context
+                )
+                review_outputs['security'] = security_output
+                context['security_task_output'] = security_output
+            except Exception as e:
+                print(f"Warning: Security orchestration failed: {e}")
+                # Create default security output
+                from src.schemas.agent_outputs import SecurityAgentOutput
+                from src.orchestration.task_specs import SecurityTaskOutput
+                review_outputs['security'] = SecurityTaskOutput(
+                    agent_output=SecurityAgentOutput(
+                        findings=[],
+                        recommendations=[],
+                        security_score=0.50,
+                        confidence=0.0,
+                        summary="Security review failed"
+                    ),
+                    raw_output="",
+                    parsing_successful=False,
+                    parsing_error=str(e)
+                )
+            
+            # Run other agents via crew for now (to be updated in subsequent PRs)
+            crew = self.crew_builder.build_review_crew(submission_text)
+            
+            # Attempt to execute crew; the real Crew API may differ.
+            crew_result: Any = None
+            if hasattr(crew, 'kickoff'):
+                try:
+                    crew_result = crew.kickoff()
+                except Exception as e:
+                    print(f"Warning: Crew execution failed: {e}")
+                    crew_result = None
+            
+            # Convert crew result to string for processing
+            crew_output_str = str(crew_result) if crew_result else ""
+            
+            # Add crew outputs for non-security agents
+            # For now, we use fallback placeholders since crew doesn't return structured dict
+            for dim in ['scalability', 'reliability', 'data_architecture', 'cost_optimization', 'compliance']:
+                # fallback placeholder
+                score_key = f"{dim.upper()}_SCORE"
+                review_outputs[dim] = f"{score_key}: 0.50"
+            
             context['review_outputs'] = review_outputs
             
             # --- 4. Scoring ----------------------------------------------------------
-            # Parse numeric scores from each agent output. For now we assume each
-            # output ends with a line like "*_SCORE: X" where X is 0.0-1.0.
+            # Parse scores from agent outputs
+            # Security agent provides structured output via orchestrator
+            # Other agents provide string outputs via crew (for now)
             dimension_scores: Dict[str, float] = {}
+            critical_findings: Dict[str, List[str]] = {}
+            
             for dim, output in review_outputs.items():
-                try:
-                    # simple parsing logic
-                    last_line = output.strip().splitlines()[-1]
-                    if ':' in last_line:
-                        _, val = last_line.split(':', 1)
-                        dimension_scores[dim] = float(val.strip())
-                    else:
+                if dim == 'security':
+                    # Handle structured SecurityTaskOutput from orchestrator
+                    try:
+                        from src.orchestration.task_specs import SecurityTaskOutput
+                        if isinstance(output, SecurityTaskOutput):
+                            security_orchestrator = create_security_orchestrator()
+                            dim_score = security_orchestrator.extract_dimension_score(output)
+                            dimension_scores[dim] = dim_score.score
+                            critical_findings[dim] = dim_score.critical_issues
+                        else:
+                            dimension_scores[dim] = 0.50
+                    except Exception:
+                        dimension_scores[dim] = 0.50
+                else:
+                    # Handle string outputs from crew
+                    try:
+                        # simple parsing logic for crew outputs
+                        output_str = str(output) if output else ""
+                        last_line = output_str.strip().splitlines()[-1] if output_str else ""
+                        if ':' in last_line:
+                            _, val = last_line.split(':', 1)
+                            dimension_scores[dim] = float(val.strip())
+                        else:
+                            dimension_scores[dim] = 0.0
+                    except Exception:
                         dimension_scores[dim] = 0.0
-                except Exception:
-                    dimension_scores[dim] = 0.0
             
             overall = self.scoring_model.calculate_overall_score(dimension_scores)
             recommendation = self.scoring_model.determine_recommendation(overall)
             context['dimension_scores'] = dimension_scores
             context['overall_score'] = overall
             context['recommendation'] = recommendation
-            
-            # --- 5. Approval Decision ------------------------------------------------
-            critical_findings: Dict[str, List[str]] = {}  # placeholder for parsing critical issues
+            context['critical_findings'] = critical_findings
             approval = self.approval_engine.make_decision(
                 overall_score=overall,
                 dimension_scores=dimension_scores,
