@@ -8,7 +8,10 @@ from typing import Tuple, List, Optional, Literal
 from src.schemas.agent_outputs import (
     SecurityAgentOutput,
     SecurityFinding,
-    SecurityRecommendation
+    SecurityRecommendation,
+    ScalabilityAgentOutput,
+    ScalabilityBottleneck,
+    ScalabilityRecommendation
 )
 
 
@@ -250,6 +253,251 @@ class SecurityAgentOutputParser:
             affected_components = [c.strip() for c in components_str.split(',')]
         
         return SecurityRecommendation(
+            title=title,
+            description=description,
+            severity=severity,
+            affected_components=affected_components
+        )
+
+
+class ScalabilityMarkdownParseError(Exception):
+    """Raised when scalability agent markdown cannot be parsed"""
+    pass
+
+
+class ScalabilityAgentOutputParser:
+    """Parse Scalability Agent structured markdown output into Pydantic models"""
+    
+    @staticmethod
+    def parse(markdown_output: str) -> ScalabilityAgentOutput:
+        """
+        Parse scalability agent markdown output into structured model
+        
+        Args:
+            markdown_output: Raw markdown response from scalability agent
+            
+        Returns:
+            ScalabilityAgentOutput with validated data
+            
+        Raises:
+            ScalabilityMarkdownParseError: If parsing fails validation
+        """
+        try:
+            bottlenecks = ScalabilityAgentOutputParser._extract_bottlenecks(markdown_output)
+            recommendations = ScalabilityAgentOutputParser._extract_recommendations(markdown_output)
+            score, confidence = ScalabilityAgentOutputParser._extract_scores(markdown_output)
+            summary = ScalabilityAgentOutputParser._extract_summary(markdown_output)
+            
+            # Validate with Pydantic model
+            return ScalabilityAgentOutput(
+                bottlenecks=bottlenecks,
+                recommendations=recommendations,
+                scalability_score=score,
+                confidence=confidence,
+                summary=summary
+            )
+        
+        except ScalabilityMarkdownParseError as e:
+            raise e
+        except Exception as e:
+            raise ScalabilityMarkdownParseError(f"Failed to parse scalability agent output: {str(e)}")
+    
+    @staticmethod
+    def _extract_bottlenecks(markdown: str) -> List[ScalabilityBottleneck]:
+        """Extract bottlenecks from SCALABILITY BOTTLENECKS section"""
+        bottlenecks_section = ScalabilityAgentOutputParser._extract_section(
+            markdown, 
+            "SCALABILITY BOTTLENECKS"
+        )
+        
+        if not bottlenecks_section or bottlenecks_section.strip().lower() == "none identified.":
+            return []
+        
+        bottlenecks = []
+        for line in bottlenecks_section.split('\n'):
+            line = line.strip()
+            if not line or not line.startswith('-'):
+                continue
+            
+            bottleneck = ScalabilityAgentOutputParser._parse_bottleneck_line(line)
+            if bottleneck:
+                bottlenecks.append(bottleneck)
+        
+        return bottlenecks
+    
+    @staticmethod
+    def _extract_recommendations(markdown: str) -> List[ScalabilityRecommendation]:
+        """Extract recommendations from SCALABILITY RECOMMENDATIONS section"""
+        rec_section = ScalabilityAgentOutputParser._extract_section(
+            markdown,
+            "SCALABILITY RECOMMENDATIONS"
+        )
+        
+        if not rec_section or rec_section.strip().lower() == "none - architecture scales well.":
+            return []
+        
+        recommendations = []
+        for line in rec_section.split('\n'):
+            line = line.strip()
+            if not line or not line.startswith('-'):
+                continue
+            
+            rec = ScalabilityAgentOutputParser._parse_recommendation_line(line)
+            if rec:
+                recommendations.append(rec)
+        
+        return recommendations
+    
+    @staticmethod
+    def _extract_scores(markdown: str) -> Tuple[float, float]:
+        """Extract score and confidence from SCALABILITY SCORE section"""
+        score_section = ScalabilityAgentOutputParser._extract_section(
+            markdown,
+            "SCALABILITY SCORE"
+        )
+        
+        if not score_section:
+            raise ScalabilityMarkdownParseError("SCALABILITY SCORE section not found")
+        
+        # Extract Overall Scalability Score
+        score_match = re.search(
+            r'Overall Scalability Score:\s*(0\.\d{2}|1\.00)',
+            score_section
+        )
+        if not score_match:
+            raise ScalabilityMarkdownParseError(
+                "Could not extract Overall Scalability Score. Expected format: 'Overall Scalability Score: 0.XX'"
+            )
+        scalability_score = float(score_match.group(1))
+        
+        # Extract Confidence Level
+        confidence_match = re.search(
+            r'Confidence Level:\s*(0\.\d{2}|1\.00)',
+            score_section
+        )
+        if not confidence_match:
+            raise ScalabilityMarkdownParseError(
+                "Could not extract Confidence Level. Expected format: 'Confidence Level: 0.XX'"
+            )
+        confidence = float(confidence_match.group(1))
+        
+        return scalability_score, confidence
+    
+    @staticmethod
+    def _extract_summary(markdown: str) -> str:
+        """Extract summary from SUMMARY section"""
+        summary_section = ScalabilityAgentOutputParser._extract_section(
+            markdown,
+            "SUMMARY"
+        )
+        return summary_section.strip() if summary_section else ""
+    
+    @staticmethod
+    def _extract_section(markdown: str, section_name: str) -> str:
+        """
+        Extract content from a markdown section
+        
+        Args:
+            markdown: Full markdown text
+            section_name: Section header (without ##)
+            
+        Returns:
+            Content between section header and next section
+        """
+        # Find section with case-insensitive search
+        pattern = rf"##\s*{re.escape(section_name)}\s*\n(.*?)(?=##\s*\w+|$)"
+        match = re.search(pattern, markdown, re.IGNORECASE | re.DOTALL)
+        
+        if not match:
+            return ""
+        
+        return match.group(1).strip()
+    
+    @staticmethod
+    def _parse_bottleneck_line(line: str) -> Optional[ScalabilityBottleneck]:
+        """
+        Parse a single bottleneck line
+        
+        Format: - **[Title]**: [Description]. Severity: [level]. Affected: [Components]
+        """
+        # Extract title (between ** **)
+        title_match = re.search(r'\*\*([^*]+)\*\*:', line)
+        if not title_match:
+            return None
+        title = title_match.group(1).strip()
+        
+        # Extract description (between **: and . Severity)
+        desc_match = re.search(r'\*\*[^*]+\*\*:\s*([^.]+)\.', line)
+        if not desc_match:
+            return None
+        description = desc_match.group(1).strip()
+        
+        # Extract severity
+        sev_match = re.search(
+            r'Severity:\s*(critical|high|medium|low)',
+            line,
+            re.IGNORECASE
+        )
+        if not sev_match:
+            raise ScalabilityMarkdownParseError(
+                f"Could not extract severity from line: {line}"
+            )
+        severity = sev_match.group(1).lower()
+        
+        # Extract affected components
+        affected_match = re.search(r'Affected:\s*([^$\n]+)', line)
+        affected_components = []
+        if affected_match:
+            components_str = affected_match.group(1).strip()
+            # Split by comma and clean up
+            affected_components = [c.strip() for c in components_str.split(',')]
+        
+        return ScalabilityBottleneck(
+            title=title,
+            description=description,
+            severity=severity,
+            affected_components=affected_components
+        )
+    
+    @staticmethod
+    def _parse_recommendation_line(line: str) -> Optional[ScalabilityRecommendation]:
+        """
+        Parse a single recommendation line
+        
+        Format: - **[Title]**: [Description]. Severity: [level]. Affected: [Components]
+        """
+        # Extract title (between ** **)
+        title_match = re.search(r'\*\*([^*]+)\*\*:', line)
+        if not title_match:
+            return None
+        title = title_match.group(1).strip()
+        
+        # Extract description (between **: and . Severity)
+        desc_match = re.search(r'\*\*[^*]+\*\*:\s*([^.]+)\.', line)
+        if not desc_match:
+            return None
+        description = desc_match.group(1).strip()
+        
+        # Extract severity
+        sev_match = re.search(
+            r'Severity:\s*(critical|high|medium|low)',
+            line,
+            re.IGNORECASE
+        )
+        if not sev_match:
+            raise ScalabilityMarkdownParseError(
+                f"Could not extract severity from line: {line}"
+            )
+        severity = sev_match.group(1).lower()
+        
+        # Extract affected components
+        affected_match = re.search(r'Affected:\s*([^$\n]+)', line)
+        affected_components = []
+        if affected_match:
+            components_str = affected_match.group(1).strip()
+            affected_components = [c.strip() for c in components_str.split(',')]
+        
+        return ScalabilityRecommendation(
             title=title,
             description=description,
             severity=severity,

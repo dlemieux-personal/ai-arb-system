@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-arb.example.com/schemas/agent-output-scalability.json",
+  "title": "Scalability Agent Output Schema",
+  "description": "Structured output schema for the Scalability Architecture Review Agent",
+  "type": "object",
+  "required": [
+    "scalability_score",
+    "confidence",
+    "bottlenecks",
+    "recommendations"
+  ],
+  "properties": {
+    "bottlenecks": {
+      "type": "array",
+      "description": "List of scalability bottlenecks identified in the architecture",
+      "minItems": 0,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/definitions/ScalabilityBottleneck"
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "List of actionable scalability recommendations",
+      "minItems": 0,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/definitions/ScalabilityRecommendation"
+      }
+    },
+    "scalability_score": {
+      "type": "number",
+      "description": "Overall scalability score (0.0 = not scalable, 1.0 = optimally scalable)",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "examples": [0.75, 0.82, 0.45]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Confidence level in this assessment (0.0 = low confidence, 1.0 = high confidence)",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "examples": [0.87, 0.92, 0.75]
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief summary of scalability posture and key concerns (2-4 sentences)",
+      "default": ""
+    }
+  },
+  "definitions": {
+    "ScalabilityBottleneck": {
+      "type": "object",
+      "description": "A specific scalability bottleneck or constraint",
+      "required": [
+        "title",
+        "description",
+        "severity"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Clear, concise title of the bottleneck",
+          "examples": [
+            "Database connection pool exhaustion",
+            "Lack of horizontal scaling for the API tier",
+            "Single point of failure in cache layer"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed explanation of the bottleneck and its impact",
+          "examples": [
+            "Current configuration allows maximum 100 concurrent database connections. At 50 requests/sec with 2-second query latency, this exhausts the pool."
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level indicating impact on scalability",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "examples": [
+            "critical",
+            "high"
+          ]
+        },
+        "affected_components": {
+          "type": "array",
+          "description": "List of architecture components affected by this bottleneck",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "Database",
+              "Connection Pool Manager"
+            ],
+            [
+              "API Server",
+              "Load Balancer"
+            ]
+          ]
+        }
+      }
+    },
+    "ScalabilityRecommendation": {
+      "type": "object",
+      "description": "A specific, actionable scalability recommendation",
+      "required": [
+        "title",
+        "description",
+        "severity"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Clear, concise title of the recommendation",
+          "examples": [
+            "Implement connection pooling with dynamic scaling",
+            "Convert monolith to microservices",
+            "Add caching layer using Redis"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed explanation of the recommendation and its expected impact",
+          "examples": [
+            "Implement PgBouncer or similar connection pooling solution to handle connection multiplexing, reducing pressure on database connection limits."
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "description": "Priority level of this recommendation",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "examples": [
+            "high",
+            "medium"
+          ]
+        },
+        "affected_components": {
+          "type": "array",
+          "description": "Components that need to implement this recommendation",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "Database",
+              "Connection Pool Manager"
+            ],
+            [
+              "Cache Layer"
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "bottlenecks": [
+        {
+          "title": "Database connection pool exhaustion",
+          "description": "Current configuration allows max 100 concurrent connections. At 50 requests/sec with 2-second latency, the pool is exhausted during peak load.",
+          "severity": "critical",
+          "affected_components": [
+            "Database",
+            "Connection Pool"
+          ]
+        },
+        {
+          "title": "Lack of horizontal scaling for web tier",
+          "description": "Single instance of application server limits throughput to current hardware capacity. No load balancer or container orchestration in place.",
+          "severity": "high",
+          "affected_components": [
+            "Application Server",
+            "Load Balancer"
+          ]
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Implement connection pooling",
+          "description": "Deploy database connection pooler (PgBouncer, Pgpool-II, or cloud-native equivalent) in front of database to multiplex connections.",
+          "severity": "critical",
+          "affected_components": [
+            "Database",
+            "Connection Pool Manager"
+          ]
+        },
+        {
+          "title": "Add horizontal scaling with container orchestration",
+          "description": "Containerize application and deploy on Kubernetes or Docker Swarm to enable dynamic scaling and load distribution.",
+          "severity": "high",
+          "affected_components": [
+            "Application Server",
+            "Orchestration Platform"
+          ]
+        }
+      ],
+      "scalability_score": 0.45,
+      "confidence": 0.91,
+      "summary": "Critical bottlenecks in database connectivity and application tier prevent horizontal scaling. Architecture requires connection pooling and orchestration to handle growth beyond current capacity."
+    }
+  ]
+}
