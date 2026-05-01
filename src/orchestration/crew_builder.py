@@ -5,10 +5,13 @@ Creates and configures the Crew AI orchestration for architecture reviews.
 
 from crewai import Crew, Agent, Task, Process
 from src.agents.agent_factory import AgentFactory
-from src.agents.output_parsers import SecurityAgentOutputParser, SecurityMarkdownParseError
-from src.orchestration.task_output import SecurityAgentTaskExecutor, TaskOutput
+from src.agents.output_parsers import (
+    SecurityAgentOutputParser, SecurityMarkdownParseError,
+    ScalabilityAgentOutputParser, ScalabilityMarkdownParseError
+)
+from src.orchestration.task_output import SecurityAgentTaskExecutor, ScalabilityAgentTaskExecutor, TaskOutput
 from src.tools.retrieval_context import get_retrieval_context
-from src.schemas.agent_outputs import SecurityAgentOutput
+from src.schemas.agent_outputs import SecurityAgentOutput, ScalabilityAgentOutput
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 
@@ -253,6 +256,18 @@ Confidence Level: 0.XX
             TaskOutput containing parsed result and error info
         """
         return SecurityAgentTaskExecutor.execute_and_parse(raw_output, agent_name="Security Agent")
+    
+    def parse_scalability_agent_output(self, raw_output: str) -> TaskOutput[ScalabilityAgentOutput]:
+        """
+        Parse raw output from the scalability agent
+        
+        Args:
+            raw_output: Raw markdown output from scalability agent
+            
+        Returns:
+            TaskOutput containing parsed result and error info
+        """
+        return ScalabilityAgentTaskExecutor.execute_and_parse(raw_output, agent_name="Scalability Agent")
     
     def extract_and_parse_agent_results(self, crew_output: Any) -> Dict[str, TaskOutput]:
         """
