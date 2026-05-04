@@ -4,7 +4,7 @@ Defines formal input/output contracts for agent tasks
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Type, List
+from typing import Optional, Dict, Any, Type, List, TypeVar, Generic
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -52,7 +52,7 @@ class TaskSpecification:
     task_name: str
     description: str
     input_schema: Type[TaskInputType]
-    output_schema: Type[TaskOutputType]
+    output_schema: Type[Any]  # Type-safe at runtime, flexible for all agent outputs
     expected_duration_seconds: int = 120
     max_retries: int = 2
     validation_rules: List[str] = field(default_factory=list)
@@ -103,7 +103,7 @@ class SecurityTaskInput(TaskInputType):
     pass  # Inherits all fields from TaskInputType
 
 
-from src.schemas.agent_outputs import SecurityAgentOutput
+from src.schemas.agent_outputs import SecurityAgentOutput, ScalabilityAgentOutput
 
 
 class SecurityTaskOutput(BaseModel):
@@ -171,12 +171,85 @@ SECURITY_AGENT_TASK_SPEC = TaskSpecification(
 )
 
 
+# Scalability Agent Task Specification
+
+class ScalabilityTaskInput(TaskInputType):
+    """Input specification for Scalability review task"""
+    pass  # Inherits all fields from TaskInputType
+
+
+class ScalabilityTaskOutput(BaseModel):
+    """Output specification for Scalability review task"""
+    
+    agent_output: ScalabilityAgentOutput = Field(
+        description="Parsed scalability agent output with bottlenecks, recommendations, and score"
+    )
+    raw_output: str = Field(
+        description="Raw markdown output from the agent"
+    )
+    parsing_successful: bool = Field(
+        description="Whether the output was successfully parsed"
+    )
+    parsing_error: Optional[str] = Field(
+        default=None,
+        description="Error message if parsing failed"
+    )
+    
+    def get_dimension_score(self) -> float:
+        """
+        Extract dimension score for integration with scoring pipeline
+        
+        Returns:
+            Scalability score (0.0-1.0)
+        """
+        if self.parsing_successful and self.agent_output:
+            return self.agent_output.scalability_score
+        # Fallback to neutral score if parsing failed
+        return 0.50
+    
+    def get_critical_bottlenecks(self) -> List[str]:
+        """
+        Extract critical bottlenecks for approval logic
+        
+        Returns:
+            List of critical bottleneck titles
+        """
+        if self.parsing_successful and self.agent_output:
+            return [
+                b.title for b in self.agent_output.bottlenecks 
+                if b.severity == "critical"
+            ]
+        return []
+
+
+# Define the Scalability Agent Task Specification
+
+SCALABILITY_AGENT_TASK_SPEC = TaskSpecification(
+    domain=TaskDomain.SCALABILITY,
+    task_name="Scalability Architecture Review",
+    description="Comprehensive scalability review of the architecture identifying bottlenecks, performance limitations, and scaling barriers",
+    input_schema=ScalabilityTaskInput,
+    output_schema=ScalabilityTaskOutput,
+    expected_duration_seconds=120,
+    max_retries=2,
+    validation_rules=[
+        "At least one bottleneck or recommendation must be present",
+        "Scalability score must be between 0.0 and 1.0",
+        "Confidence level must be between 0.0 and 1.0",
+        "All severity levels must be one of: critical, high, medium, low",
+        "All affected components must be non-empty",
+    ],
+    critical_failure_mode="fallback_to_default_score"
+)
+
+
 @dataclass
 class TaskSpecs:
     """Registry of all task specifications"""
     
     specs: Dict[str, TaskSpecification] = field(default_factory=lambda: {
-        "security": SECURITY_AGENT_TASK_SPEC
+        "security": SECURITY_AGENT_TASK_SPEC,
+        "scalability": SCALABILITY_AGENT_TASK_SPEC
     })
     
     def get_spec(self, domain: str) -> Optional[TaskSpecification]:

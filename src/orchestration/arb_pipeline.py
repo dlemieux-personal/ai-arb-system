@@ -8,6 +8,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from src.orchestration.recommendation_crew_builder import RecommendationCrewBuilder
 from src.orchestration.security_orchestrator import create_security_orchestrator
+from src.orchestration.scalability_orchestrator import create_scalability_orchestrator
 from src.tools.retrieval_context import get_retrieval_context
 
 
