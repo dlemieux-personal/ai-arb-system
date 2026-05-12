@@ -225,10 +225,142 @@ class ScalabilityAgentOutput(BaseModel):
         }
 
 
+class ReliabilityFinding(BaseModel):
+    """A specific reliability issue identified during review"""
+    title: str = Field(
+        ..., 
+        description="Clear title of the reliability finding",
+        examples=["Single point of failure in the primary database cluster"]
+    )
+    description: str = Field(
+        ...,
+        description="Detailed description of the reliability issue and its impact",
+        examples=["The primary database cluster does not have a standby replica in another availability zone"]
+    )
+    severity: Literal["critical", "high", "medium", "low"] = Field(
+        ..., 
+        description="Severity level of the finding",
+        examples=["high"]
+    )
+    affected_components: List[str] = Field(
+        default_factory=list,
+        description="List of architecture components affected by this finding",
+        examples=[['Database Cluster', 'Load Balancer']]
+    )
+
+
+class ReliabilityFailureMode(BaseModel):
+    """A specific failure mode and its potential impact"""
+    title: str = Field(
+        ..., 
+        description="Clear title of the failure mode",
+        examples=["Regional outage due to single-region deployment"]
+    )
+    description: str = Field(
+        ...,
+        description="Description of the failure mode and how it can occur",
+        examples=["An availability zone failure would bring down the entire application layer"]
+    )
+    impact: str = Field(
+        ...,
+        description="Potential impact of this failure mode on the system",
+        examples=["Complete service outage for all customers in the affected region"]
+    )
+    affected_components: List[str] = Field(
+        default_factory=list,
+        description="Components that are exposed to this failure mode",
+        examples=[['Application Servers', 'Database', 'Messaging Queue']]
+    )
+
+
+class ReliabilityRecommendation(BaseModel):
+    """A specific, actionable reliability recommendation"""
+    title: str = Field(
+        ...,
+        description="Clear title of the recommendation",
+        examples=["Enable cross-region failover for the database"]
+    )
+    description: str = Field(
+        ...,
+        description="Detailed explanation of the recommendation and its rationale",
+        examples=["Add a secondary database replica in a second region with automated failover"]
+    )
+    severity: Literal["critical", "high", "medium", "low"] = Field(
+        ...,
+        description="Priority level of this recommendation",
+        examples=["critical"]
+    )
+    affected_components: List[str] = Field(
+        default_factory=list,
+        description="Components that need to implement this recommendation",
+        examples=[['Database', 'Failover Automation']]
+    )
+
+
 class ReliabilityAgentOutput(BaseModel):
-    """Placeholder for reliability agent output schema"""
-    # TODO: Implement in next PR
-    pass
+    """Complete structured output from the Reliability review agent"""
+    findings: List[ReliabilityFinding] = Field(
+        default_factory=list,
+        description="List of reliability findings identified in the architecture"
+    )
+    failure_modes: List[ReliabilityFailureMode] = Field(
+        default_factory=list,
+        description="List of identified failure modes and their potential impact"
+    )
+    recommendations: List[ReliabilityRecommendation] = Field(
+        default_factory=list,
+        description="List of actionable reliability recommendations"
+    )
+    reliability_score: float = Field(
+        ..., 
+        ge=0.0,
+        le=1.0,
+        description="Overall reliability score for the architecture (0.0-1.0)",
+        examples=[0.75, 0.82]
+    )
+    confidence: float = Field(
+        ..., 
+        ge=0.0,
+        le=1.0,
+        description="Confidence level in this assessment (0.0-1.0)"
+    )
+    summary: str = Field(
+        default="",
+        description="Brief summary of reliability posture and key concerns"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "findings": [
+                    {
+                        "title": "Single point of failure in database cluster",
+                        "description": "The primary database cluster is deployed in one availability zone without a standby replica.",
+                        "severity": "high",
+                        "affected_components": ["Database Cluster", "Application Layer"]
+                    }
+                ],
+                "failure_modes": [
+                    {
+                        "title": "Availability zone outage",
+                        "description": "Loss of a single availability zone would take down the entire service.",
+                        "impact": "Service outage for the application and data layer",
+                        "affected_components": ["Application Servers", "Database Cluster"]
+                    }
+                ],
+                "recommendations": [
+                    {
+                        "title": "Add cross-region failover",
+                        "description": "Deploy standby replicas in a second region and automate failover detection.",
+                        "severity": "critical",
+                        "affected_components": ["Database", "Traffic Management"]
+                    }
+                ],
+                "reliability_score": 0.70,
+                "confidence": 0.88,
+                "summary": "The architecture shows good reliability practices but is exposed to single-region failure risks."
+            }
+        }
 
 
 class DataArchitectureAgentOutput(BaseModel):

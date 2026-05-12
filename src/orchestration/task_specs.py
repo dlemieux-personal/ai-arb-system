@@ -103,7 +103,7 @@ class SecurityTaskInput(TaskInputType):
     pass  # Inherits all fields from TaskInputType
 
 
-from src.schemas.agent_outputs import SecurityAgentOutput, ScalabilityAgentOutput
+from src.schemas.agent_outputs import SecurityAgentOutput, ScalabilityAgentOutput, ReliabilityAgentOutput
 
 
 class SecurityTaskOutput(BaseModel):
@@ -243,13 +243,81 @@ SCALABILITY_AGENT_TASK_SPEC = TaskSpecification(
 )
 
 
+class ReliabilityTaskInput(TaskInputType):
+    """Input specification for Reliability review task"""
+    pass  # Inherits all fields from TaskInputType
+
+
+class ReliabilityTaskOutput(BaseModel):
+    """Output specification for Reliability review task"""
+
+    agent_output: ReliabilityAgentOutput = Field(
+        description="Parsed reliability agent output with findings, failure modes, recommendations, and score"
+    )
+    raw_output: str = Field(
+        description="Raw markdown output from the agent"
+    )
+    parsing_successful: bool = Field(
+        description="Whether the output was successfully parsed"
+    )
+    parsing_error: Optional[str] = Field(
+        default=None,
+        description="Error message if parsing failed"
+    )
+
+    def get_dimension_score(self) -> float:
+        """
+        Extract dimension score for integration with scoring pipeline
+
+        Returns:
+            Reliability score (0.0-1.0)
+        """
+        if self.parsing_successful and self.agent_output:
+            return self.agent_output.reliability_score
+        return 0.50
+
+    def get_critical_failure_modes(self) -> List[str]:
+        """
+        Extract critical failure mode titles for approval logic
+
+        Returns:
+            List of failure mode titles
+        """
+        if self.parsing_successful and self.agent_output:
+            return [
+                f.title for f in self.agent_output.failure_modes 
+                if f.affected_components
+            ]
+        return []
+
+
+RELIABILITY_AGENT_TASK_SPEC = TaskSpecification(
+    domain=TaskDomain.RELIABILITY,
+    task_name="Reliability Architecture Review",
+    description="Comprehensive reliability review of the architecture identifying failure modes, resilience gaps, and recovery risks",
+    input_schema=ReliabilityTaskInput,
+    output_schema=ReliabilityTaskOutput,
+    expected_duration_seconds=120,
+    max_retries=2,
+    validation_rules=[
+        "At least one finding, failure mode, or recommendation must be present",
+        "Reliability score must be between 0.0 and 1.0",
+        "Confidence level must be between 0.0 and 1.0",
+        "All severity levels must be one of: critical, high, medium, low",
+        "All affected components must be non-empty",
+    ],
+    critical_failure_mode="fallback_to_default_score"
+)
+
+
 @dataclass
 class TaskSpecs:
     """Registry of all task specifications"""
     
     specs: Dict[str, TaskSpecification] = field(default_factory=lambda: {
         "security": SECURITY_AGENT_TASK_SPEC,
-        "scalability": SCALABILITY_AGENT_TASK_SPEC
+        "scalability": SCALABILITY_AGENT_TASK_SPEC,
+        "reliability": RELIABILITY_AGENT_TASK_SPEC
     })
     
     def get_spec(self, domain: str) -> Optional[TaskSpecification]:
