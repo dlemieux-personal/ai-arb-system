@@ -33,7 +33,7 @@ class TestReliabilityFindingModel:
             ReliabilityFinding(
                 title="Test",
                 description="Test",
-                severity="minor",
+                severity="low",
                 affected_components=[]
             )
 
